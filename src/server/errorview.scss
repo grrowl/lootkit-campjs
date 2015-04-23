@@ -1,0 +1,26 @@
+// comet.is server error stylesheet
+// Server errors are rendered outside the usual AppRoute handler, so we don't have
+// app.css styles to fall back on, so they're included here.
+
+// <https://github.com/necolas/normalize.css> v3.0.2
+@import "css/normalize";
+
+#route-servererror {
+  max-width: 1024px;
+  margin: 0 auto;
+
+  h1 {
+    color: #AA0000;
+    font-size: 32px;
+  }
+
+  pre {
+    font-size: 12px;
+
+    &:first-line {
+      font-weight: bold;
+      color: #AA0000;
+      font-size: 24px;
+    }
+  }
+}
