@@ -64,3 +64,4 @@ Encrypted with the user's private key using [Cryptico](https://github.com/jpfox/
 
 -> record arbitrary events
 -> view them on the wide scale, by time.
+

@@ -10,32 +10,6 @@
   "engines": {
     "node": "0.12.x"
   },
-  "eslintConfig": {
-    "parser": "babel-eslint",
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": true
-    },
-    "ecmaFeatures": {
-      "modules": true,
-      "jsx": true
-    },
-    "rules": {
-      "curly": [
-        1,
-        "all"
-      ],
-      "strict": 0,
-      "quotes": [
-        1,
-        "single"
-      ],
-      "no-unused-vars": 0,
-      "camelcase": 0,
-      "no-underscore-dangle": 0
-    }
-  },
   "dependencies": {
     "babel-core": "^5.1.11",
     "babel-loader": "^5.0.0",
@@ -45,6 +19,7 @@
     "cookie-parser": "^1.3.4",
     "cookies-js": "^1.1.0",
     "css-loader": "^0.9.0",
+    "events": "^1.0.2",
     "exports-loader": "^0.6.2",
     "expose-loader": "^0.6.0",
     "extract-text-webpack-plugin": "^0.6.0",

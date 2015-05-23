@@ -57,6 +57,7 @@ var baseConfig = {
   recordsPath: path.resolve(outputPath, './webpack.records.json'),
   // profile: true, // collect timing profile information and stats
   quiet: true,
+  noInfo: true,
   stats: {
     colors: true,
     modules: false,
@@ -101,8 +102,25 @@ var baseConfig = {
 
       // [6to5.bluebirdCoroutines](https://6to5.org/docs/usage/transformers/#bluebird-coroutines)
       // [Bluebird.coroutine](https://github.com/petkaantonov/bluebird/blob/master/API.md#promisecoroutinegeneratorfunction-generatorfunction---function)
-      { test: /\.js$/, loaders: ['babel?optional=bluebirdCoroutines'], exclude: [/node_modules/, /bower_components/] },
-      { test: /\.jsx$/, loaders: ['babel?optional=bluebirdCoroutines'] },
+      {
+        test: /\.js$/,
+        loader: 'babel',
+        query: {
+          optional: ['bluebirdCoroutines', 'runtime'],
+          cacheDirectory: true
+        },
+        // don't compile .js modules, it will slow down compilation for no benefit
+        exclude: /(node_modules|bower_components)/
+      },
+      {
+        // .jsx files must always be run through babel, even in module dirs
+        test: /\.jsx$/,
+        loader: 'babel',
+        query: {
+          optional: ['bluebirdCoroutines', 'runtime'],
+          cacheDirectory: true
+        }
+      },
 
       // enable require('...package.json') for superagent et al
       { test: /\.json$/, loaders: ['json'] },

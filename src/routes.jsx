@@ -11,18 +11,19 @@ import Router, {
   Redirect
 } from 'react-router';
 
-import AppRoute from 'components/approute';
 import NotFound from 'server/notfoundroute';
 
-// Landing pages
-import Home from 'home/route';
+import AppRoute from 'components/approute';
+import MapView from 'views/mapview';
+import ListView from 'views/listview';
 
 export default (
   <Route handler={ AppRoute }>
 
-    <Route name="home" path="/" handler={ Home } />
-    <DefaultRoute handler={ Home } />
+    <Route name="map" handler={ MapView } />
+    <Route name="list" handler={ ListView } />
 
+    <DefaultRoute handler={ ListView } />
     <NotFoundRoute handler={ NotFound } />
   </Route>
 );
