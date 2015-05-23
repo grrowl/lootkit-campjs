@@ -12,10 +12,6 @@ import Loot from 'loot';
 
 export default class MapView extends React.Component {
 
-  _onLootKeypress(event) {
-    console.log('lootkeypress', event, event.keyCode);
-  }
-
   render() {
     return (
       <div>

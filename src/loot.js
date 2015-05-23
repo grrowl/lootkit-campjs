@@ -7,7 +7,7 @@ export default class Loot {
     invariant(obj.location, "Loot instated without location");
     invariant(obj.location.length === 2, "Loot location must have 2 values");
 
-    this._id = 'x'+ ~~(Math.random() * 100);
+    this._id = null;
     this.type = obj.type || 'text';
     this.message = obj.message;
     this.location = obj.location;

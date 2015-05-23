@@ -11,7 +11,7 @@ class LootStore extends Store {
     LootActions.addListener('create', this.onCreateLoot.bind(this));
 
     try {
-      this.loot = localStorage.getItem('loot') || [];
+      this.loot = JSON.parse(localStorage.getItem('loot')) || [];
     } catch (e) {
       console.warn('Couldn\'t load LootStore', e);
       this.loot = [];
@@ -24,6 +24,8 @@ class LootStore extends Store {
 
     this.loot.push(obj);
     super.emitChange();
+
+    localStorage.setItem('loot', JSON.stringify(this.loot));
   }
 }
 

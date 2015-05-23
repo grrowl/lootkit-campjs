@@ -1,0 +1,12 @@
+
+.connectivityTimer {
+
+}
+
+.connectivityTimer.online {
+  background-color: limegreen;
+}
+.connectivityTimer.offline {
+  background-color: darkred;
+  color: white;
+}

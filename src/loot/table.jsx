@@ -23,7 +23,7 @@ export default class LootTable extends React.Component {
                 <td>{ loot._id }</td>
                 <td>{ loot.type }</td>
                 <td>{ loot.message }</td>
-                <td>{ loot.location }</td>
+                <td>{ loot.location.join(', ') }</td>
               </tr>
             );
           })

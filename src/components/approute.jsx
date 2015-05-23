@@ -4,8 +4,12 @@ import config from 'config';
 import React from 'react';
 import Router, { RouteHandler, Link } from 'react-router';
 
-import LootTable from 'loot/table';
+import ConnectivityTimer from 'components/connectivitytimer';
+import GeolocationStatus from 'components/geolocationstatus';
 
+import GeolocationStore from 'stores/geolocation';
+
+import LootTable from 'loot/table';
 import LootActions from 'actions/loot';
 import Loot from 'loot';
 
@@ -17,9 +21,15 @@ export default class AppRoute extends React.Component {
     if (event.keyCode == KEY_ENTER) {
       let newLoot = new Loot({
         message: event.target.value,
-        location: [0, 0]
+        location: [
+          GeolocationStore.location.latitude,
+          GeolocationStore.location.longitude
+        ]
       });
       LootActions.emit('create', newLoot);
+
+      // Reset input
+      event.target.value = '';
     }
   }
 
@@ -31,7 +41,11 @@ export default class AppRoute extends React.Component {
       <section>
         <header>
           <h1>LootKit</h1>
+          <ConnectivityTimer />
+          <GeolocationStatus />
+          { '  ' }
           <Link to="map">Map</Link>
+          { '  ' }
           <Link to="list">List</Link>
           <hr />
         </header>
