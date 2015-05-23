@@ -13,8 +13,7 @@ var webpack = require('webpack'),
 var StatsPlugin = require('stats-webpack-plugin'),
     ExtractTextPlugin = require("extract-text-webpack-plugin");
 
-// Comet config (includes version, links)
-// won't hot-update
+// Config (includes version, links)
 
 var appConfig = (function (env) {
   var config;
@@ -42,13 +41,12 @@ var inputPath = path.join(__dirname, 'src'),
 
 var hotServerPort = 8001;
 
-// prefer `loaders: []` over `loader: ''`, so we can easily change the loaders
-// in layered configs (envConfigs below)
-
 var baseConfig = {
   debug: false,
 
-  entry: '', // overridden in build-specific config below
+  entry: {
+    client: 'client.jsx'
+  },
   output: {
     path: outputPath,
     publicPath: '/',
@@ -80,10 +78,25 @@ var baseConfig = {
       }
     ],
     loaders: [
-      { test: /\.html$/, loaders: ['html'] },
+      {
+        test: /\.html$/,
+        loaders: ['file?name=[name].[ext]']
+      },
       {
         test: /(\.jpg|\.jpeg|\.png|\.gif|\.eot|\.svg|\.woff|\.ttf)$/,
         loaders: ['file?name=assets/[name].[hash].[ext]']
+      },
+
+      // Styles
+      {
+        test: /\.s?css$/,
+        exclude: /app\.scss$/,
+        loaders: ['style']
+      },
+      {
+        // Write app.scss to a file specifically
+        test: /app\.scss$/,
+        loaders: [ExtractTextPlugin.loader()]
       },
 
       // [6to5.bluebirdCoroutines](https://6to5.org/docs/usage/transformers/#bluebird-coroutines)
@@ -96,6 +109,17 @@ var baseConfig = {
 
       // enable React devtools
       { test: /[\/]react.*\.js$/, loaders: ['expose?React'] }
+    ],
+    postLoaders: [
+      {
+        // break any file ending in "route.jsx" into its own bundle
+        test: /route\.jsx$/,
+        // exclude views you want included in the initial chunk
+        // app.scss must be required in the initial chunk somewhere
+        // for style interception to work reliably
+        exclude: /approute\.jsx$/,
+        loaders: ['react-router-proxy']
+      }
     ]
   },
   resolve: {
@@ -106,6 +130,10 @@ var baseConfig = {
   },
   externals: {},
   plugins: [
+    new ExtractTextPlugin(appConfig.version +'/app.css'),
+    new webpack.DefinePlugin({
+      'typeof window': JSON.stringify("object")
+    }),
     new webpack.ResolverPlugin(
       new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('bower.json', ['main'])
     ),
@@ -121,113 +149,6 @@ var baseConfig = {
 // Not only "prod" and "dev", "client" and "server" have differing build configs
 // This will be *shallow copied* onto config. Take care if you're overwriting keys.
 var envConfig = {
-
-  // server build
-  server: function(config) {
-    return {
-      // will output dist/server.js
-      entry: { server: 'server.jsx' },
-      output: _.assign({}, config.output, {
-        libraryTarget: 'commonjs2' // so we can require() this file on server
-      }),
-      recordsPath: path.resolve(outputPath, './server.records.json'),
-      target: 'node-webkit',
-      node: {
-        // don't shim process envs
-        process: false,
-        global: false,
-        http: false,
-        __dirname: true // needed by superagent
-      },
-      module: {
-        preLoaders: config.module.preLoaders,
-        loaders: config.module.loaders.concat([
-          {
-            test: /\.s?css$/,
-            exclude: /app\.scss/,
-            loaders: [
-              // Intercepts styles being rendered server-side and redirects them
-              // to a variable which can be injected into the document's <head>
-              path.join(inputPath, 'server', 'style-interceptor')
-            ]
-          },
-          {
-            test: /app\.scss/,
-            loaders: ['null-loader'] // do nothing
-          }
-        ])
-      },
-      plugins: config.plugins.concat(
-        // needed for superagent (possibly its dependency node-formidable)
-        // <https://github.com/visionmedia/superagent/wiki/Superagent-for-Webpack>
-        new webpack.DefinePlugin({
-          "global.GENTLY": false
-        })
-      ),
-      resolve: _.assign({}, config.resolve, {
-        alias: _.assign({}, config.resolve.alias, {
-          bluebird: 'bluebird/js/main/bluebird'
-        })
-      })
-    };
-  },
-
-  // client build
-  client: function (config) {
-    return {
-      // will output dist/client.js
-      entry: {
-        client: 'client.jsx'
-      },
-      output: _.assign({}, config.output, {
-        // client assets are output to dist/public/
-        path: path.join(config.output.path, 'public'),
-
-        // code assets are output to dist/public/<version>/
-        filename: appConfig.version +'/[name].js',
-        chunkFilename: appConfig.version +'/client.[id].js'
-      }),
-      recordsPath: path.resolve(outputPath, './client.records.json'),
-      module: {
-        preLoaders: config.module.preLoaders,
-        loaders: config.module.loaders.concat([
-          {
-            test: /\.s?css$/,
-            exclude: /app\.scss$/,
-            loaders: ['style']
-          },
-          {
-            // Write app.scss to a file specifically
-            test: /app\.scss$/,
-            loaders: [ExtractTextPlugin.loader()]
-          },
-        ]),
-        postLoaders: (config.module.postLoaders || []).concat([
-          {
-            // break any file ending in "route.jsx" into its own bundle
-            test: /route\.jsx$/,
-            // exclude views you want included in the initial chunk
-            // app.scss must be required in the initial chunk somewhere
-            // for style interception to work reliably
-            exclude: /approute\.jsx$/,
-            loaders: ['react-router-proxy']
-          }
-        ]),
-      },
-      plugins: config.plugins.concat(
-        new ExtractTextPlugin(appConfig.version +'/app.css'),
-        new webpack.DefinePlugin({
-          'typeof window': JSON.stringify("object")
-        })
-      ),
-      resolve: _.assign({}, config.resolve, {
-        alias: _.assign({}, config.resolve.alias, {
-          raven: 'raven-js' // load client library
-        })
-      })
-    };
-  },
-
 
   // development environment
   dev: function (config) {

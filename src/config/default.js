@@ -16,7 +16,7 @@ var defaultConfig = {
 
   // server.jsx configuration
   server: {
-    port: process.env['PORT'],
+    port: process.env['PORT'] || 9000,
     hostname: process.env['APP_SERVER']
   },
 

@@ -1,5 +1,7 @@
 'use strict';
 
+require('index.html');
+
 import _ from 'lodash';
 import React from 'react';
 import Router from 'react-router';

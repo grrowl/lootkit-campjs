@@ -23,9 +23,6 @@ module.exports = function (grunt) {
   // where cacheable assets compile to
   var distributableDir = webpackConfig().output.path;
 
-  // where cacheable assets compile to
-  var publicDir = webpackConfig(['client']).output.path;
-
   // What port the hotserver runs on
   var hotServerPort = webpackConfig.hotServerPort;
 
@@ -37,11 +34,9 @@ module.exports = function (grunt) {
     // Webpack task to compile assets to dist/
     webpack: {
       options: {},
-      'client-dev-hot': webpackConfig(['client', 'dev', 'hot']),
-      'client-dev': webpackConfig(['client', 'dev']),
-      'client-prod': webpackConfig(['client', 'prod']),
-      'server-dev': webpackConfig(['server', 'dev']),
-      'server-prod': webpackConfig(['server', 'prod'])
+      'client-dev-hot': webpackConfig(['dev', 'hot']),
+      'client-dev': webpackConfig(['dev']),
+      'client-prod': webpackConfig(['prod'])
     },
 
     // Connect serves files from dist/ and (on dev) client files from memory
@@ -50,11 +45,6 @@ module.exports = function (grunt) {
         hostname: '*',
         debug: false,
         port: defaultConfig.server.port,
-        stuff: (function () {
-          console.log('default config port : ' + defaultConfig.server)
-          console.log('default config env : ' + process.env['PORT']);
-          return null;
-        })(),
 
         // defaultMiddleware is not a connect option -- we use it to inherit
         // no matter the envionment
@@ -65,19 +55,9 @@ module.exports = function (grunt) {
 
             compression(),
 
-            cookieParser(),
-
             // handles existing files within public/ directory
-            require('serve-static')(publicDir),
+            require('serve-static')(distributableDir)
 
-            // server-side rendering of the application
-            (function (req, res, next) {
-              // must require "server.js" each time so cache invalidation works
-              // (servercache:reset task)
-              var server = require(path.resolve(distributableDir, 'server.js'));
-
-              return server.middleware(req, res, next);
-            })
           ];
 
           return middlewares;
@@ -113,7 +93,7 @@ module.exports = function (grunt) {
 
             middlewares = options.defaultMiddlewares(connect, options, middlewares);
 
-            middlewares.unshift(options.devMiddleware(['client', 'dev']));
+            middlewares.unshift(options.devMiddleware(['dev']));
 
             return middlewares;
           }
@@ -126,7 +106,7 @@ module.exports = function (grunt) {
 
             middlewares = options.defaultMiddlewares(connect, options, middlewares);
 
-            middlewares.unshift(options.devMiddleware(['client', 'dev', 'hot']));
+            middlewares.unshift(options.devMiddleware(['dev', 'hot']));
 
             return middlewares;
           }
@@ -137,84 +117,21 @@ module.exports = function (grunt) {
       }
     },
 
-    // Delete files within distributableDir when about to compile
-    clean: [distributableDir],
-
-    // Copy static files from src/static to dist/
-    copy: {
-      static: {
-        files: [
-          {
-            expand: true,
-            cwd: path.resolve(sourceDir, 'static'),
-            src: ['**'],
-            dest: publicDir
-          }
-        ]
-      }
-    },
-
-    // Runs multiple watchers at once
-    focus: {
-      dev: {
-        // watch source and compiled output
-        include: ['static', 'source', 'compiled']
-      },
-      prod: {
-        // only watch for server.js updates
-        include: ['compiled']
-      }
-    },
-
     // Server-side rendering requires that all jsx is compiled; so, this runs
     // no matter the environment -- just the options its compiled with change
     watch: {
-      static: {
-        files: path.resolve(sourceDir, 'static', '*'),
-        tasks: ['copy:static'],
-      },
       source: {
         files: [path.join(sourceDir, '**')],
-        tasks: ['concurrent:compile-dev'],
-      },
-      compiled: {
-        // watch for changes to the server runtime, then invalidate the cache
-        files: [path.join(distributableDir, 'server.js')],
-        tasks: ['servercache:reset'],
-        options: {
-          spawn: false,
-          // debounceDelay: 1
-        }
-      }
-    },
-
-    // Tasks for compiling the app concurrently (output may be a bit messy)
-    concurrent: {
-      'compile-dev-hot': {
-        tasks: ['webpack:server-dev'], // server only, client is served by dev-middleware
-        options: {logConcurrentOutput: true}
-      },
-      'compile-dev': {
-        tasks: ['webpack:server-dev'], // server only, client is served by dev-middleware
-        options: {logConcurrentOutput: true}
-      },
-      'compile-prod': {
-        tasks: ['webpack:server-prod', 'webpack:client-prod'],
-        options: {logConcurrentOutput: true}
+        tasks: ['webpack:compile-dev']
       }
     }
-  });
 
-  // Reset the require cache for the server runtime
-  grunt.registerTask('servercache:reset', function () {
-    // must match the path.resolve call for connect, above.
-    delete require.cache[path.resolve(distributableDir, 'server.js')];
   });
 
   // Run the webpack Hot Module Replacement server
   grunt.registerTask('hotserver:dev', function () {
     var WebpackDevServer = require('webpack-dev-server'),
-      config = webpackConfig(['client', 'dev', 'hot']),
+      config = webpackConfig(['dev', 'hot']),
       host = '0.0.0.0',
       port = hotServerPort;
 
@@ -238,60 +155,45 @@ module.exports = function (grunt) {
     require('source-map-support').install();
   });
 
-  grunt.registerTask('prepare:dist', function () {
+  grunt.registerTask('server:dev-hot', function () {
     grunt.task.run([
-      'clean',
-      'copy:static'
+      'sourcemaps:install',
+      'hotserver:dev', // serves HMR assets for client
+      'connect:dev-hot', // start server
+      'watch:source'
     ]);
   });
 
   grunt.registerTask('server:dev', function () {
     grunt.task.run([
-      'prepare:dist',
       'sourcemaps:install',
-      'concurrent:compile-dev', // must be compiled to js so server can render
       'connect:dev', // initially run server
-      'focus:dev'
-    ]);
-  });
-
-  grunt.registerTask('server:dev-hot', function () {
-    grunt.task.run([
-      'prepare:dist',
-      'sourcemaps:install',
-      'concurrent:compile-dev-hot', // must be compiled to js so server can render
-      'hotserver:dev', // serves HMR assets for client
-      'connect:dev-hot', // start server
-      'focus:dev'
+      'watch:source'
     ]);
   });
 
   grunt.registerTask('server:prod', function () {
     grunt.task.run([
-      'prepare:dist',
-      'concurrent:compile-prod',
-      'connect:prod', // start server
-      'focus:prod'
+      'webpack:client-prod',
+      'connect:prod:keepalive' // start server
     ]);
   });
 
   grunt.registerTask('serve', function () {
     grunt.task.run([
-      'connect:prod:keepalive',
+      'connect:prod:keepalive'
     ]);
   });
 
   grunt.registerTask('build:prod', function () {
     grunt.task.run([
-      'prepare:dist',
-      'concurrent:compile-prod',
+      'webpack:client-prod'
     ]);
   });
 
   grunt.registerTask('build:dev', function () {
     grunt.task.run([
-      'prepare:dist',
-      'concurrent:compile-dev',
+      'webpack:client-dev'
     ]);
   });
 
@@ -301,6 +203,6 @@ module.exports = function (grunt) {
     ]);
   });
 
-  grunt.registerTask('heroku:dev', 'build:prod');
+  grunt.registerTask('build:prod');
 
 };

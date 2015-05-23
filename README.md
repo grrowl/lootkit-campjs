@@ -1,50 +1,66 @@
-Isomorphic React Starter Kit
-========
+# "the world exploded and all we have left is yikyak :\"
 
-This app is an example of how to build a React app which will pre-render on the
-server using the same views which are used to render on the client. It also
-includes pre-fetching of remote data used to compile the view, to prevent
-re-fetching this data on the client.
-It uses webpack to create two builds for server and client.
+aim:
+  authenticated, public messaging. annotate "stuff". "zombies here" that kind of shit
 
-Pull requests, issues and questions are more than welcome.
+visual representation:
+  - you're at the center, north is up.
+  - time is slidable (default T-0s)
+  - events are smaller the more in the past they are
+    events are faded when they're in the future (very quickly, looking into the
+    past)
+  - event heatmap shown on time slider
 
-A similar codebase powers future projects we're building at CareerLounge.
-Enthusastic about React, JS, and building awesome shit? We're hiring engineers,
-get in touch!
+pseudonymous, authenticated:
+  - client generates private/public keys on init
+  - everything's signed, public key is passed along with your encrypted mesasge
+  - not at all private, but it's definitely /that guy/
+  - future scope: potential for secret messages. maybe. i'm not a cryptographer
 
-## Quick Start
+- pseudonymous, client generates a key to sign all messages?
+  -> fuck usernames
+  -> fuck the lot really
 
-Start server om development mode: `NODE_ENV=development grunt server:dev`
+- can send any kind of message
+  -> everything encodes into ascii eventually
 
-The value of NODE_ENV will load the appropriate config from the `src/config/`
-directory
 
-## Configuration
+# implementation
 
-Default and environment-specifc configuration is found in `src/config/`.
-`config.server.hostname` is `example.com` by default, and overridden
-configuration for your local machine can be set by copying `local-template.js`
-to `local.js`, or creating a new `local.js`.
+Map:
+  some d3 thing, points around the place, idk its not important;
 
-## Javascript
+Store:
+  Alt, localStorage
+  { _id: false }
 
-We write ES6 almost everywhere, thanks to Webpack and Babel. `Gruntfile.js`
-and any file it directly includes should be ES5, including all config files.
-We use bluebird for promises everywhere.
+Sync:
 
-Components set in routes.jsx will be checked for a `fetchData` function during
-server render. If set, it will be passed the
-[react-router parameters](https://github.com/rackt/react-router/blob/master/docs/api/RouterContext.md#getcurrentparams)
-in an object and will be expected to return a Promise to be settled once the
-data is fetched.
+* Sync straight to MongoDB - lol HTTP api
 
-Within route components which use `fetchData`, you should call it statically
-within the component itself if required, to
+* GET
+  -> send array of known _ids for filtering (save bandwidth)
+  -> returns array of other JSON objects
 
-## Sass/CSS
+* PUT
+  -> send array of all our known objects with `_id: false`
 
-We hook sass-loader into the preLoaders so you can use an alternate loader to
-deal with the output within the code. You probably won't have to do this, we
-only use it to capture `app.scss` to a static file on the client build, and
-ignore it on the server.
+
+Message structure:
+Encrypted with the user's private key using [Cryptico](https://github.com/jpfox/cryptico)
+
+    {
+      type: 'text'        mime type of the payload
+      pubkey: <>          user's public key, also kind of an identifier
+      payload: <>         the message, encrypted
+      latlng: [lat, lng]  location of the message
+      signature:          unencrypted payload + type + latlng, encrypted (for validation)
+    }
+
+
+# future scope
+
+24.7 the wild
+
+-> record arbitrary events
+-> view them on the wide scale, by time.
