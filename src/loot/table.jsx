@@ -19,7 +19,7 @@ export default class LootTable extends React.Component {
         {
           this.props.loot.map((loot) => {
             return (
-              <tr>
+              <tr key={ loot._id || loot.message }>
                 <td>{ loot._id }</td>
                 <td>{ loot.type }</td>
                 <td>{ loot.message }</td>

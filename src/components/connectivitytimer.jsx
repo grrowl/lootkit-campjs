@@ -3,6 +3,8 @@
 import React from 'react';
 import cx from 'classnames';
 
+import ConnectivityActions from 'actions/connectivity';
+
 const checkInterval = 3000; // 3s
 const refreshInterval = 100; // 100ms
 export default class ConnectivityTimer extends React.Component {
@@ -12,6 +14,7 @@ export default class ConnectivityTimer extends React.Component {
 
     this.state = {
       isOnline: false,
+      isSyncing: false,
       lastCheck: null
     };
     this.onlineTimer = null;
@@ -35,8 +38,8 @@ export default class ConnectivityTimer extends React.Component {
       isOnline: navigator.onLine,
       lastCheck: window.performance.now()
     });
-    if (typeof this.props.onChange === 'function')
-      this.props.onChange.call(true);
+
+    ConnectivityActions.emit(navigator.onLine ? 'online' : 'offline');
   }
 
   render() {
@@ -52,7 +55,11 @@ export default class ConnectivityTimer extends React.Component {
       <button className={ classes }>
         {
           this.state.isOnline
-          ? 'Online'
+          ? (
+              this.state.isSyncing
+              ? 'Syncing'
+              : 'Online'
+            )
           : 'Offline'
         }
         { ' ' }
@@ -63,7 +70,3 @@ export default class ConnectivityTimer extends React.Component {
     );
   }
 }
-
-ConnectivityTimer.propTypes = {
-  onChange: React.PropTypes.func
-};

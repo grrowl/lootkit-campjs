@@ -68,11 +68,11 @@ if (typeof window !== 'undefined') {
 
 }
 
-// terrible polyfills
+// # polyfills
 
+// <https://gist.github.com/paulirish/5438650>
 // @license http://opensource.org/licenses/MIT
 // copyright Paul Irish 2015
-
 
 // Date.now() is supported everywhere except IE8. For IE8 we use the Date.now polyfill
 //   github.com/Financial-Times/polyfill-service/blob/master/polyfills/Date.now/polyfill.js
@@ -80,7 +80,6 @@ if (typeof window !== 'undefined') {
 
 // if you want values similar to what you'd get with real perf.now, place this towards the head of the page
 // but in reality, you're just getting the delta between now() calls, so it's not terribly important where it's placed
-
 
 (function(){
 

@@ -26,12 +26,12 @@ export class Action {
     this.removeListener(event, callback);
   }
 
-  emit(event, callback) {
+  emit(event) {
     invariant(this.actions.indexOf(event) > -1,
       "Action.emit event not in set"
     );
     // super.emit(event, callback);
-    this.emit(event, callback);
+    this.emit(event);
   }
 };
 
