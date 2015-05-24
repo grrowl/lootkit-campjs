@@ -45,8 +45,8 @@ export default class AppRoute extends React.Component {
           <GeolocationStatus />
           { '  ' }
           <Link to="map">Map</Link>
-          { '  ' }
-          <Link to="list">List</Link>
+          { /* '  ' */ }
+          { /* <Link to="list">List</Link> */ }
           <hr />
         </header>
 

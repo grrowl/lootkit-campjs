@@ -6,7 +6,6 @@ import Router, { Link } from 'react-router';
 import config from 'config';
 
 import LootStore from 'stores/loot';
-import LootActions from 'actions/loot';
 
 import LootTable from 'loot/table';
 

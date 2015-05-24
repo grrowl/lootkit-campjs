@@ -4,6 +4,7 @@
 // mongod --dbpath=/data --port 27017
 
 // almost all this copied from the friggin driver website
+// also, isn't used at all by the server at the moment.
 // <http://mongodb.github.io/node-mongodb-native/2.0/>
 var db = {
   url: 'mongodb://localhost:27017/myproject',

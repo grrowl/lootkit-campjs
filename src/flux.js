@@ -4,6 +4,8 @@ import invariant from 'invariant';
 import { EventEmitter } from 'events';
 
 // Actions have events of one of this.events[];
+// For some reason, EventEmitter shits the bed when extended, so we do it
+// manually with lodash. You get the idea.
 // export class Action extends EventEmitter {
 export class Action {
   constructor() {

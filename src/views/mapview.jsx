@@ -7,7 +7,6 @@ import config from 'config';
 
 import LootTable from 'loot/table';
 
-import LootActions from 'actions/loot';
 import Loot from 'loot';
 
 export default class MapView extends React.Component {
