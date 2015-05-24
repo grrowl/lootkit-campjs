@@ -43,9 +43,10 @@ class LootStore extends Store {
 
     for (var i in this.loot) {
       if (!this.loot[i]._id) {
-        newIndexMap[i] = newCollection.push(this.loot[i]);
+        newIndexMap[i] = newCollection.push(this.loot[i]) - 1;
       }
     }
+    console.log('built newIndexMap', newIndexMap);
 
     if (newCollection.length === 0)
       return;
@@ -64,9 +65,21 @@ class LootStore extends Store {
 
         for (var i in res.body) {
           // update id for those records.
-          var origIndex = newIndexMap.indexOf(i);
+          // var origIndex = newIndexMap.indexOf(i);
+          var origIndex;
+          for (var j in newIndexMap) {
+            if (newIndexMap[j] == i) {
+              origIndex = i;
+              break;
+            }
+          }
+          if (origIndex === undefined)
+            console.error('origIndex not found')
+
           this.loot[origIndex]._id = res.body[i]._id;
         }
+
+        localStorage.setItem('loot', JSON.stringify(this.loot));
         this.emitChange();
       });
   }

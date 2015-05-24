@@ -4,7 +4,7 @@
 // grunt tasks
 // This file must use ES5 syntax
 
-var storage = [];
+var db = require('mongodb')
 
 module.exports = function (grunt) {
 
@@ -73,48 +73,7 @@ module.exports = function (grunt) {
             require('body-parser').json(),
 
             // server API
-            (function (req, res, next) {
-              if (req.url !== '/%22db%22') {
-                next();
-                return;
-              }
-
-              console.log('accessing db, '+ storage.length +' boop beep boop...');
-
-              switch(req.method) {
-                case 'GET':
-                  res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify(storage, null, 2));
-                  break;
-
-                case 'PUT':
-                  if (typeof req.body !== 'object') {
-                    // this is terrible
-                    console.log("BAD JSON DETECTED", req.body);
-                    break;
-                  }
-
-                  var lastId = -1;
-                  for (var i in storage) {
-                    if (storage._id > lastId)
-                      lastId = storage._id + 1;
-                  }
-
-                  for (var i in req.body) {
-                    req.body[i]._id = lastId++;
-                    storage.push(req.body[i]);
-                  }
-
-                  res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify(req.body, null, 2));
-                  break;
-
-                default:
-                  res.end('unknown method');
-              }
-
-              next();
-            })
+            require('./src/server.js')
           ];
 
           return middlewares;

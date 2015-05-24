@@ -17,7 +17,10 @@ class GeolocationStore extends Store {
 
     } catch (e) {
       console.warn('Couldn\'t get geolocation', e);
-      this.location = [-38.389706, 145.146423]; // campjs!
+      this.location = {
+        latitude: -38.389706,
+        longitude: 145.146423
+      }; // campjs!
       this.located = false;
     }
   }

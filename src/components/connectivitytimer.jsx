@@ -43,6 +43,7 @@ export default class ConnectivityTimer extends React.Component {
   }
 
   render() {
+    // Example of how to include modular stylesheets alongside your javascript.
     require('./connectivitytimer.scss');
 
     let classes = cx({
